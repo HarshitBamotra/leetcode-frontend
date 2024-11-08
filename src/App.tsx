@@ -15,6 +15,7 @@ function App() {
       <Navbar />
       <SideBar />
       <Routes>
+        <Route path='/' element={ <ProblemDescription descriptionText={markdownText} />} />
         <Route path='/problems/list' element={<ProblemList />} />
         <Route path='/problem' element={ <ProblemDescription descriptionText={markdownText} />} />
       </Routes>
