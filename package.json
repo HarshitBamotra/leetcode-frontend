@@ -15,12 +15,14 @@
     "ace-builds": "^1.32.7",
     "axios": "^1.7.2",
     "dompurify": "^3.0.9",
+    "lucide-react": "^0.456.0",
     "react": "^18.2.0",
     "react-ace": "^10.1.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.1",
     "react-router-dom": "^6.22.3",
-    "rehype-raw": "^7.0.0"
+    "rehype-raw": "^7.0.0",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.12",

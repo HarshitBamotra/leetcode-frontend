@@ -1,5 +1,5 @@
 
-import { useState, DragEvent } from 'react';
+import { useState, DragEvent, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -9,6 +9,8 @@ import DOMPurify from 'dompurify';
 
 import Languages from '../../constants/Languages';
 import Themes from '../../constants/Themes';
+import { useParams } from 'react-router-dom';
+import { io } from 'socket.io-client';
 
 type languageSupport = {
     languageName: string,
@@ -20,34 +22,122 @@ type themeStyle = {
     value: string
 }
 
+// type serverData = {
+//     success: string,
+//     message: string,
+//     err: object,
+//     data: object
+// }
+
 function Description({ descriptionText }: {descriptionText: string}) {
 
+    const {id} = useParams();
+    const userId = "1"; // Hardcoded for this example
+    console.log(id);
 
-    const sanitizedMarkdown = DOMPurify.sanitize(descriptionText);
+    const [problem, setProblem] = useState({});
+
+    
+
+    // const sanitizedMarkdown = DOMPurify.sanitize(descriptionText);
 
 
     const [activeTab, setActiveTab] = useState('statement');
     const [testCaseTab, setTestCaseTab] = useState('input');
     const [leftWidth, setLeftWidth] = useState(50);
     const [isDragging, setIsDragging] = useState(false);
-    const [language, setLanguage] = useState('javascript');
+    const [language, setLanguage] = useState('c_cpp');
     const [code, setCode] = useState('');
     const [theme, setTheme] = useState('monokai');
+    const [sanitizedMarkdown, setSanitizedMarkdown] = useState("");
+    const [output, setOutput] = useState('');
+    const [submissionStatus, setSubmissionStatus] = useState('');
+    const [outputData, setOutputData] = useState<{
+        output: string;
+        status: string;
+    } | null>(null);
+
+
+
+    useEffect(() => {
+        const socket = io('http://localhost:3004');
+
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server');
+            // Register userId with socket server
+            socket.emit('setUserId', userId);
+        });
+
+        socket.on('submissionPayloadResponse', (payload: any) => {
+            console.log('Received submission response:', payload);
+            setOutputData(payload.response);
+            // setOutput(payload.output || payload.message || JSON.stringify(payload));
+            setSubmissionStatus(payload.response.status);
+            setTestCaseTab('output');
+            const collapsible = document.getElementById("input-output-collapsible");
+            collapsible?.click();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
+
+
+    useEffect(()=>{
+        const fetchData = async ()=>{
+            const response = await axios.get(`http://localhost:3001/api/v1/problems/${id}`);
+            console.log(response.data.data);
+            setProblem(response.data.data);
+            setCode(response.data.data.codeStubs[0].userSnippet);
+            setSanitizedMarkdown(DOMPurify.sanitize(response.data.data.description));
+        }
+        fetchData();
+    }, []);
+
+    const renderOutput = ()=>{
+        if (!outputData) return 'No output yet';
+
+        return (
+            <div className="space-y-2">
+                <div className={`text-base font-semibold ${
+                    outputData.status === 'success' ? 'text-green-400' : 'text-red-400'
+                }`}>
+                    Status: {outputData.status}
+                </div>
+                <div className="mt-2">
+                    <div className="text-base font-semibold">Output:</div>
+                    <div className="font-mono mt-1 text-white">
+                        {outputData.output}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     async function handleSubmission() {
         try {
             console.log(code)
             console.log(language)
+            setSubmissionStatus('Processing');
+            setOutput('Evaluating your submission...');
+            setTestCaseTab('output');
             const response = await axios.post("http://localhost:3000/api/v1/submissions", {
                 code,
                 language,
                 userId: "1",
-                problemId: "6671b5e86f909d206b2d40a4"
+                problemId: "67308b743bfdf608a0690851"
             });
             console.log(response);
+            setSubmissionStatus('Submitted');
+            
+            const collapsible = document.getElementById("input-output-collapsible");
+            collapsible?.click();
             return response;
         } catch(error) {
-            console.log(error);
+            console.error('Submission error:', error);
+            setOutput('Error submitting code. Please try again.');
+            setSubmissionStatus('Error');
         }
     }
 
@@ -121,11 +211,9 @@ function Description({ descriptionText }: {descriptionText: string}) {
 
                 <div className='flex gap-x-1.5 justify-start items-center px-4 py-2 basis-[5%]'>
                     <div>
-                        <button className="btn btn-success btn-sm" onClick={handleSubmission}>Submit</button>
+                        <button className="btn btn-success btn-sm" onClick={handleSubmission} disabled={submissionStatus === "Processing"}>{submissionStatus==="Processing" ? "Processing" : "Submit"}</button>
                     </div>
-                    <div>
-                        <button className="btn btn-warning btn-sm">Run Code</button>
-                    </div>
+                    
                     <div>
                         <select 
                             className="select select-info w-full select-sm max-w-xs" 
@@ -176,9 +264,9 @@ function Description({ descriptionText }: {descriptionText: string}) {
                     { /* Collapsable test case part */ }
 
                     <div className="collapse bg-base-200 rounded-none">
-                        <input type="checkbox" className="peer" /> 
+                        <input type="checkbox" className="peer" id="input-output-collapsible"/> 
                         <div className="collapse-title bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content">
-                            Console
+                            Console {submissionStatus && `(${submissionStatus})`}
                         </div>
                         <div className="collapse-content bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content"> 
                         <div role="tablist" className="tabs tabs-boxed w-3/5 mb-4">
@@ -186,7 +274,13 @@ function Description({ descriptionText }: {descriptionText: string}) {
                             <a onClick={() => setTestCaseTab('output')} role="tab" className={isInputTabActive('output')}>Output</a>
                         </div>
                             
-                            {(testCaseTab === 'input') ? <textarea rows={4} cols={70} className='bg-neutral text-white rounded-md resize-none'/> : <div className='w-12 h-8'></div>}
+                            {(testCaseTab === 'input') ? 
+                                <textarea rows={4} cols={70} className='bg-neutral text-white rounded-md resize-none'/> : 
+
+                                <div className='bg-neutral rounded-md p-4'>
+                                    {renderOutput()}
+                                </div>
+                            }
                         </div>
                     </div>
                 
