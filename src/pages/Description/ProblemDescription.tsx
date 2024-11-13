@@ -126,13 +126,10 @@ function Description({ descriptionText }: {descriptionText: string}) {
                 code,
                 language,
                 userId: "1",
-                problemId: "67308b743bfdf608a0690851"
+                problemId: id
             });
             console.log(response);
-            setSubmissionStatus('Submitted');
-            
-            const collapsible = document.getElementById("input-output-collapsible");
-            collapsible?.click();
+            setSubmissionStatus('Evaluating...');
             return response;
         } catch(error) {
             console.error('Submission error:', error);

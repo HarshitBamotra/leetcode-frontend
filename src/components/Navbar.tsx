@@ -13,7 +13,7 @@ function Navbar() {
                 </div>
             </div>
             <div className="navbar-center">
-                <a className="btn btn-ghost text-xl">AlgoCode</a>
+                <a className="btn btn-ghost text-xl" href="/">DevLab</a>
             </div>
             <div className="navbar-end">
                 <div className="dropdown dropdown-end">

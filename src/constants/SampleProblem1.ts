@@ -1,7 +1,7 @@
 export default {
     problemStatement: `
 
-## LeetCode Problem 688: Knight Probability in Chessboard 
+# Knight Probability in Chessboard 
 
 <br />
 
@@ -60,6 +60,6 @@ The final answer must be within \`10^-5\` of the correct answer.
 ### Follow-up
 
 Can you use a solution with O(K) memory?
-    
+  
     `
 }
