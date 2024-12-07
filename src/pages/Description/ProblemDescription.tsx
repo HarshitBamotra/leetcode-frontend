@@ -29,13 +29,13 @@ type themeStyle = {
 //     data: object
 // }
 
-function Description({ descriptionText }: {descriptionText: string}) {
+function Description(){
 
     const {id} = useParams();
     const userId = "1"; // Hardcoded for this example
     console.log(id);
 
-    const [problem, setProblem] = useState({});
+    // const [problem, setProblem] = useState({});
 
     
 
@@ -50,7 +50,7 @@ function Description({ descriptionText }: {descriptionText: string}) {
     const [code, setCode] = useState('');
     const [theme, setTheme] = useState('monokai');
     const [sanitizedMarkdown, setSanitizedMarkdown] = useState("");
-    const [output, setOutput] = useState('');
+    // const [output, setOutput] = useState('');
     const [submissionStatus, setSubmissionStatus] = useState('');
     const [outputData, setOutputData] = useState<{
         output: string;
@@ -88,7 +88,7 @@ function Description({ descriptionText }: {descriptionText: string}) {
         const fetchData = async ()=>{
             const response = await axios.get(`http://localhost:3001/api/v1/problems/${id}`);
             console.log(response.data.data);
-            setProblem(response.data.data);
+            // setProblem(response.data.data);
             setCode(response.data.data.codeStubs[0].userSnippet);
             setSanitizedMarkdown(DOMPurify.sanitize(response.data.data.description));
         }
@@ -120,7 +120,7 @@ function Description({ descriptionText }: {descriptionText: string}) {
             console.log(code)
             console.log(language)
             setSubmissionStatus('Processing');
-            setOutput('Evaluating your submission...');
+            // setOutput('Evaluating your submission...');
             setTestCaseTab('output');
             const response = await axios.post("http://localhost:3000/api/v1/submissions", {
                 code,
@@ -133,7 +133,7 @@ function Description({ descriptionText }: {descriptionText: string}) {
             return response;
         } catch(error) {
             console.error('Submission error:', error);
-            setOutput('Error submitting code. Please try again.');
+            // setOutput('Error submitting code. Please try again.');
             setSubmissionStatus('Error');
         }
     }
