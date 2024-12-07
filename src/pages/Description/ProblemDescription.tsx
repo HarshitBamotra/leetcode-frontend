@@ -12,6 +12,10 @@ import Themes from '../../constants/Themes';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
+const PROBLEM_SERVICE = import.meta.env.VITE_PROBLEM_SERVICE
+const SUBMISSION_SERVICE = import.meta.env.VITE_SUBMISSION_SERVICE
+const SOCKET_SERVICE = import.meta.env.VITE_SOCKET_SERVICE
+
 type languageSupport = {
     languageName: string,
     value: string
@@ -60,7 +64,7 @@ function Description(){
 
 
     useEffect(() => {
-        const socket = io('http://localhost:3004');
+        const socket = io(`${SOCKET_SERVICE}`);
 
         socket.on('connect', () => {
             console.log('Connected to WebSocket server');
@@ -86,7 +90,7 @@ function Description(){
 
     useEffect(()=>{
         const fetchData = async ()=>{
-            const response = await axios.get(`http://localhost:3001/api/v1/problems/${id}`);
+            const response = await axios.get(`${PROBLEM_SERVICE}/api/v1/problems/${id}`);
             console.log(response.data.data);
             // setProblem(response.data.data);
             setCode(response.data.data.codeStubs[0].userSnippet);
@@ -122,7 +126,7 @@ function Description(){
             setSubmissionStatus('Processing');
             // setOutput('Evaluating your submission...');
             setTestCaseTab('output');
-            const response = await axios.post("http://localhost:3000/api/v1/submissions", {
+            const response = await axios.post(`${SUBMISSION_SERVICE}/api/v1/submissions`, {
                 code,
                 language,
                 userId: "1",

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter } from 'lucide-react';
+const PROBLEM_SERVICE = import.meta.env.VITE_PROBLEM_SERVICE
 
 interface Problem {
   _id: string;
@@ -19,7 +20,7 @@ function ProblemList() {
   useEffect(() => {
     const fetchProblems = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/v1/problems/');
+        const response = await axios.get(`${PROBLEM_SERVICE}/api/v1/problems/`);
         setProblems(response.data.data);
         setLoading(false);
       } catch (error) {
